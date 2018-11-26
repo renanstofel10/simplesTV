@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script src="JSTVRemote.js"></script>
+<p>TV: <select id="tv">
+	<option value="lg_webos">LG (WebOS)</option>
+	<option value="lg_netcast">LG (NetCast)</option>
+	<option value="philips">Philips</option>
+</select> IP: <input type="text" id="ip" value="192.168.0.11"/> <button onclick="setTv()">Set</button></p>
+<p>App(s): <select id="apps"></select> <button onclick="startApp()">Start</button> <button onclick="closeApp()">Close</button></p>
+<p>Commands: <select id="keys"></select> <button onclick="sendKey()">Send</button></p>
+<p><button onclick="screenshot()">Take screenshot</button>
+<p>Send Text: <input type="text" id="text"/> <button onclick="sendText()">Send</button></p>
+<script>
+var tv;
+var keys;
+var apps;
+var keySelect = document.getElementById("keys");
+var appSelect = document.getElementById("apps");
+var tvSelect = document.getElementById("tv");
+var textInput = document.getElementById("text");
+var features = {};
+var ip = document.getElementById("ip").value;
+var tvType = tvSelect.options[tvSelect.selectedIndex].value;
+
+function setTv(){
+	try {
+		tv = JSTVRemote.init(tvType, ip, null, function(data){
+			switch(tvType) {
+				case "lg_webos":
+				alert("LG(WebOS) initiated!");
+				break;
+
+				case "lg_netcast":
+				alert("LG(NetCast) initiated!");
+				break;
+
+				case "philips":
+				alert("Philips initiated!");
+			}	
+		});
+
+	} catch (err) {
+		alert(err.message);
+	}
+
+	features = tv.getFeatures();
+	
+	//Lista de Comandos
+	keys = tv.getKeys();
+	keySelect.innerHTML = "";
+	for(var i = 0; i < keys.length; i++){
+		var option = document.createElement('option');
+		option.value = keys[i];
+		option.text = keys[i];
+		keySelect.appendChild(option);
+	}
+
+	//Lista de apps
+	apps = tv.getApps();
+	appSelect.innerHTML = "";
+	for(var i = 0; i < apps.length; i++){
+		var option = document.createElement('option');
+		option.value = apps[i];
+		option.text = apps[i];
+		appSelect.appendChild(option);
+	}
+}
+
+function screenshot(){
+	if(tv){
+		if(features["takeScreenShot"]){
+			alert("AQUI1: " + ip);
+			tv.takeScreenShot(function(response){
+				alert("takeScreenShot: " + ip + "; " + response)
+			});
+		}
+	}
+	else{
+		alert("Set TV first")
+	}
+}
+
+function startApp(){
+	if(tv){
+		if(features["startApp"]){
+			var appid = appSelect.options[appSelect.selectedIndex].value;
+			tv.startApp(appid, function(response){
+				alert("Start application: " + appid + "; " + response);
+			});
+		}
+	}
+	else{
+		alert("Set TV first")
+	}
+}
+
+function closeApp(){
+	if(tv){
+		if(features["closeApp"]){
+			var appid = appSelect.options[appSelect.selectedIndex].value;
+			tv.closeApp(appid, function(response){
+				alert("Close application: " + appid + "; " + response);
+			});
+		}
+	}
+	else{
+		alert("Set TV first")
+	}
+}
+
+function sendKey(){
+	if(tv){
+		if(features["sendKey"]){
+			var key = keySelect.options[keySelect.selectedIndex].value;
+			tv.sendKey(key, function(response){
+				alert("Sent key: " + key + "; " + response);
+			});
+		}
+	}
+	else{
+		alert("Set TV first")
+	}
+}
+
+function sendText(){
+	if(tv){
+		if(features["inputText"]){
+			var text = textInput.value;
+			tv.inputText(text, function(response){
+				alert("Sent Text: " + text + "; " + response);
+			});
+		}
+	}
+	else{
+		alert("Set TV first")
+	}
+}
+
+</script>
+</body>
+</html>
